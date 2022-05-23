@@ -36,7 +36,7 @@
 		Player();
 		void DecrementHealth();
 		float HealthValue;
-		float HealthOption;
+		float HealthOption = 100;
 
 		inline void set_position(const gef::Vector4& position) { position_ = position; }
 		inline void set_position(const float x, const float y, const float z) { position_ = gef::Vector4(x, y, z); }

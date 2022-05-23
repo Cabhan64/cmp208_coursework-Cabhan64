@@ -14,6 +14,9 @@
 #include <maths/vector2.h>
 #include <maths/vector4.h>
 #include "obj_mesh_loader.h"
+#include <ctime>
+
+#include "time.h"
 
 
 
@@ -53,7 +56,7 @@ void SceneApp::Init()
 	//game_state_ = GAME;
 	//GameInit();
 
-	
+	float EndTime;
 
 	//volume
 	Volumeinfo.volume = 10;
@@ -68,7 +71,7 @@ void SceneApp::Init()
 
 		//music
 		audio_manager_->SetMusicVolumeInfo(Volumeinfo);
-		audio_manager_->LoadMusic("gas.wav", platform_);
+		audio_manager_->LoadMusic("On_your_toes.wav", platform_);
 		audio_manager_->PlayMusic();
 	}
 
@@ -115,6 +118,13 @@ bool SceneApp::Update(float frame_time)
 			GameUpdate(frame_time);
 		}
 			break;
+		case ENDLOSS:
+		{
+			EndUpdate(frame_time);
+		}
+		break;
+			
+
 		default:
 			return false; //If state isnt in list this exits the game somehow idk
 			break;
@@ -158,6 +168,13 @@ void SceneApp::Render()
 
 		break;
 
+
+		case ENDLOSS:
+		{
+			EndRender();
+		}
+
+		break;
 
 		}
 	}
@@ -283,7 +300,7 @@ void SceneApp::InitEnemy() {
 
 	b2BodyDef enemy_body_def;
 	enemy_body_def.type = b2_dynamicBody;
-	enemy_body_def.position = b2Vec2(0.0f, 7.0f);
+	enemy_body_def.position = b2Vec2(0.0f, 10.0f);
 
 	enemy_body_ = world_->CreateBody(&enemy_body_def);
 
@@ -968,9 +985,9 @@ void SceneApp::OptionUpdate(float frame_time) {
 			if (left_x < -0.5)
 			{
 
-				if (player_.HealthValue > 0)
+				if (player_.HealthOption > 0)
 				{
-					player_.HealthValue = player_.HealthValue - 1;
+					player_.HealthOption = player_.HealthOption - 1;
 
 				}
 			}
@@ -979,7 +996,7 @@ void SceneApp::OptionUpdate(float frame_time) {
 
 				if (player_.HealthValue < 999)
 				{
-					player_.HealthValue = player_.HealthValue + 1;
+					player_.HealthOption = player_.HealthOption + 1;
 				}
 
 			}
@@ -1054,7 +1071,7 @@ font_->RenderText(
 	1.0f,
 	0xffffffff,
 	gef::TJ_CENTRE,
-	"HP:%.1f", player_.HealthValue);
+	"HP:%.1f", player_.HealthOption);
 
 
 font_->RenderText(
@@ -1145,6 +1162,11 @@ void SceneApp::GameInit()
 	InitPlayer();
 	InitGround();
 	InitEnemy();
+
+	FULLtimer = clock();
+
+	player_.HealthValue = player_.HealthOption;
+
 }
 
 void SceneApp::GameRelease()
@@ -1255,10 +1277,13 @@ void SceneApp::GameUpdate(float frame_time)
 		// shoot sphere at obstacles
 
 	}
+	timer = clock();
+	if (player_.HealthValue == 0) {
 
-	if (player_.HealthValue = 0) {
+		
 
-
+		game_state_ = ENDLOSS;
+		EndInit();
 
 	}
 
@@ -1311,3 +1336,38 @@ void SceneApp::GameRender()
 	sprite_renderer_->End();
 }
 
+void SceneApp::EndInit() {
+
+	timer = timer - FULLtimer;
+}
+void SceneApp::EndRelease(){
+
+	timer = 0;
+}
+void SceneApp::EndUpdate(float frame_time){
+
+	const gef::SonyController* controller = input_manager_->controller_input()->GetController(0);
+
+	if (controller->buttons_pressed() & gef_SONY_CTRL_CROSS) {
+		// shoot sphere at obstacles
+		GameRelease();
+		EndRelease();
+
+		game_state_ = FRONTEND;
+		FrontendInit();
+	}
+
+
+}
+void SceneApp::EndRender(){
+	
+	
+	font_->RenderText(
+		sprite_renderer_,
+		gef::Vector4(platform_.width() * 0.5f, platform_.height() * 0.35f - 56.0f, -0.99f),
+		1.0f,
+		0xffffffff,
+		gef::TJ_CENTRE,
+		"GAMEOVER / SURVIVAL SCORE:%.1f", timer/1000);
+
+}

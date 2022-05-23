@@ -76,6 +76,8 @@ private:
 
 	bool ChosenOption = false;
 
+	float timer;
+	float FULLtimer;
 	//
 	// GAME DECLARATIONS
 	//
